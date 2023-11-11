@@ -21,6 +21,7 @@ import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { toast } from 'react-hot-toast'
 import { CreateMessage } from 'ai'
+import { getChats } from '@/app/actions'
 
 const IS_PREVIEW = process.env.VERCEL_ENV === 'preview'
 export interface ChatProps extends React.ComponentProps<'div'> {
@@ -60,29 +61,51 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
     await new Promise(resolve => setTimeout(resolve, 1000))
     return undefined
   }
+
   const append = async (message: Message | CreateMessage) => {
     setMessages(messages => [
       ...messages,
       { ...message, role: 'user' } as Message
     ])
 
-    // just fetch data here
-    // and append received message to messages
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: 'smooth'
+    })
 
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    async function postMessage(text: string): Promise<any> {
+      const rooturl = 'http://94.237.15.54:5000'
+
+      const response = await fetch(`${rooturl}/api/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ text })
+      })
+      console.log(response, 'response')
+      return await response.json()
+    }
+
+    setIsLoading(true)
+    const response = await postMessage(message.content ?? 'yoyoyoy')
+    setIsLoading(false)
 
     setMessages(messages => [
       ...messages,
       {
         id: Math.random().toString(),
-        content: 'response from the llm',
+        content: response.output ?? 'Failed to generate response',
         role: 'system',
         createdAt: new Date()
       }
     ])
 
-    // scroll to bottom? get element and scroll into view,
-    // or just scroll to bottom if possible
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: 'smooth'
+    })
 
     return message.content ?? 'yoyoyoy'
   }
