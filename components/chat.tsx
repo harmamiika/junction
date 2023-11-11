@@ -82,7 +82,7 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*'
         },
-        body: JSON.stringify({ text })
+        body: JSON.stringify({ text, number_of_links: 2 })
       })
       console.log(response, 'response')
       return await response.json()
