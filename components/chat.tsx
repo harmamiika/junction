@@ -20,6 +20,7 @@ import { useState } from 'react'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { toast } from 'react-hot-toast'
+import { CreateMessage } from 'ai'
 
 const IS_PREVIEW = process.env.VERCEL_ENV === 'preview'
 export interface ChatProps extends React.ComponentProps<'div'> {
@@ -34,20 +35,60 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
   )
   const [previewTokenDialog, setPreviewTokenDialog] = useState(IS_PREVIEW)
   const [previewTokenInput, setPreviewTokenInput] = useState(previewToken ?? '')
-  const { messages, append, reload, stop, isLoading, input, setInput } =
-    useChat({
-      initialMessages,
-      id,
-      body: {
-        id,
-        previewToken
-      },
-      onResponse(response) {
-        if (response.status === 401) {
-          toast.error(response.statusText)
-        }
+  // const { messages, append, reload, stop, isLoading, input, setInput } =
+  //   useChat({
+  //     initialMessages,
+  //     id,
+  //     body: {
+  //       id,
+  //       previewToken
+  //     },
+  //     onResponse(response) {
+  //       if (response.status === 401) {
+  //         toast.error(response.statusText)
+  //       }
+  //     }
+  //   })
+  const [messages, setMessages] = useState<Message[]>([])
+  const [input, setInput] = useState<string>('')
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const stop = () => {
+    console.log('stop was pressed')
+  }
+  const reload = async () => {
+    console.log('reload was pressed')
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    return undefined
+  }
+  const append = async (message: Message | CreateMessage) => {
+    setMessages(messages => [
+      ...messages,
+      { ...message, role: 'user' } as Message
+    ])
+
+    // just fetch data here
+    // and append received message to messages
+
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    setMessages(messages => [
+      ...messages,
+      {
+        id: Math.random().toString(),
+        content: 'response from the llm',
+        role: 'system',
+        createdAt: new Date()
       }
-    })
+    ])
+
+    // scroll to bottom? get element and scroll into view,
+    // or just scroll to bottom if possible
+
+    return message.content ?? 'yoyoyoy'
+  }
+
+  console.log(messages, 'messages')
+
   return (
     <>
       <div className={cn('pb-[200px] pt-4 md:pt-10', className)}>
